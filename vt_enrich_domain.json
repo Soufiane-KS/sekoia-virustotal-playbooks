@@ -59,6 +59,7 @@
     "4": {
       "name": "Scan Domain",
       "type": "action",
+      "icon": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2aWV3Qm94PSIwIDAgNjYgNjAiIGZpbGw9IiNmZmYiIGZpbGwtcnVsZT0iZXZlbm9kZCIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjx1c2UgeGxpbms6aHJlZj0iI0EiIHg9Ii41IiB5PSIuNSIvPjxzeW1ib2wgaWQ9IkEiIG92ZXJmbG93PSJ2aXNpYmxlIj48cGF0aCBkPSJNMjkuMDYgMjkuMjU3TDAgNTguNTE0aDY0VjBIMHptMjkuMSAyMy40MDZIMTMuNTNMMzcuNDcgMjkuMTEgMTQuMTc0IDUuODVINTguMTV6IiBzdHJva2U9Im5vbmUiIGZpbGw9IiMzYjYxZmYiIGZpbGwtcnVsZT0ibm9uemVybyIvPjwvc3ltYm9sPjwvc3ZnPg==",
       "outputs": {
         "default": ["5"]
       },
@@ -102,6 +103,7 @@
     "7": {
       "name": "Scan Domain URL Score",
       "type": "action",
+      "icon": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2aWV3Qm94PSIwIDAgNjYgNjAiIGZpbGw9IiNmZmYiIGZpbGwtcnVsZT0iZXZlbm9kZCIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjx1c2UgeGxpbms6aHJlZj0iI0EiIHg9Ii41IiB5PSIuNSIvPjxzeW1ib2wgaWQ9IkEiIG92ZXJmbG93PSJ2aXNpYmxlIj48cGF0aCBkPSJNMjkuMDYgMjkuMjU3TDAgNTguNTE0aDY0VjBIMHptMjkuMSAyMy40MDZIMTMuNTNMMzcuNDcgMjkuMTEgMTQuMTc0IDUuODVINTguMTV6IiBzdHJva2U9Im5vbmUiIGZpbGw9IiMzYjYxZmYiIGZpbGwtcnVsZT0ibm9uemVybyIvPjwvc3ltYm9sPjwvc3ZnPg==",
       "outputs": {
         "unknown": [],
         "detected": ["8", "9", "10"],
