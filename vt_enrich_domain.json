@@ -107,7 +107,7 @@
       "outputs": {
         "unknown": [],
         "detected": ["8", "9", "10"],
-        "not detected": ["8", "9", "10"]
+        "not detected": ["8", "10"]
       },
       "arguments": {
         "url": "{{ node.3['output'][0] }}"
