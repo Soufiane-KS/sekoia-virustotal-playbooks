@@ -140,29 +140,21 @@
       }
     },
     "10": {
-      "name": "Auto Validation",
+      "name": "Set Alert Urgency",
       "type": "operator",
       "subtype": "condition",
       "cases": [
         {
           "left": "{{ node.7.positives }}",
-          "name": "More than 6 positives",
+          "name": "High",
           "right": "{{ 6 }}",
           "comparison": ">=",
-          "description": "{{ node.7.positives }} >= {{ 6 }}"
-        },
-        {
-          "left": "{{ node.7.positives }}",
-          "name": "No detections",
-          "right": "{{ 0 }}",
-          "comparison": "==",
-          "description": "{{ node.7.positives }} == {{ 0 }}"
+          "description": "{{ node.7.positives }} >= 6 - multiple vendors flagged the domain"
         }
       ],
       "outputs": {
         "else": [],
-        "More than 6 positives": ["17"],
-        "No detections": ["18"]
+        "High": ["17"]
       }
     },
     "11": {
@@ -255,29 +247,16 @@
       "module_uuid": "92d8bb47-7c51-445d-81de-ae04edbb6f0a"
     },
     "17": {
-      "name": "Validate Alert",
+      "name": "Set Urgency High",
       "type": "action",
       "outputs": {
         "default": []
       },
       "arguments": {
         "uuid": "{{ (store.uuid | reject('equalto', None)) | join('') }}",
-        "action_uuid": "c39a0a95-aa2c-4d0d-8d2e-d3decf426eea"
+        "urgency": 80
       },
-      "action_uuid": "c4b84449-a26f-4f18-bde4-33efa921f4d4",
-      "module_uuid": "92d8bb47-7c51-445d-81de-ae04edbb6f0a"
-    },
-    "18": {
-      "name": "Reject Alert",
-      "type": "action",
-      "outputs": {
-        "default": []
-      },
-      "arguments": {
-        "uuid": "{{ (store.uuid | reject('equalto', None)) | join('') }}",
-        "action_uuid": "ade85d7b-7507-4026-bfc6-cc006d10ddac"
-      },
-      "action_uuid": "c4b84449-a26f-4f18-bde4-33efa921f4d4",
+      "action_uuid": "113a06db-3cef-48ac-908b-45f3ebc4d1bf",
       "module_uuid": "92d8bb47-7c51-445d-81de-ae04edbb6f0a"
     }
   }

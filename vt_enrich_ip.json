@@ -1,6 +1,6 @@
 {
   "name": "VT Enrich IP",
-  "description": "Extract the destination IP from alert events and enrich it with VirusTotal. Posts country/ASN context, malicious file hashes, and malicious URLs associated with the IP.",
+  "description": "Extract destination and source IPs from alert events, skip private IPs, and enrich public IPs with VirusTotal. Posts country/ASN context, malicious file hashes, and malicious URLs.",
   "uuid": "3f8a2b1c-7d4e-5f6a-8b9c-0d1e2f3a4b5c",
   "tags": null,
   "nodes": {
@@ -45,7 +45,7 @@
       "name": "Get Events",
       "type": "action",
       "outputs": {
-        "default": ["4"]
+        "default": ["4", "12"]
       },
       "arguments": {
         "query": "alert_short_ids: \"{{ node.2['short_id'] }}\"",
@@ -71,11 +71,28 @@
       "module_uuid": "07cce76b-a319-40ee-a0cf-1ba433431e21"
     },
     "5": {
-      "name": "Scan IP on VirusTotal",
+      "name": "Is Destination IP Private?",
+      "type": "operator",
+      "subtype": "condition",
+      "cases": [
+        {
+          "left": "{%if node.4['output'][0] | regex_match('^(10\\..*|172\\.(1[6-9]|2[0-9]|3[01])\\..*|192\\.168\\..*)$') %}true1{% endif %}",
+          "name": "Private IP",
+          "right": "true1",
+          "comparison": "=="
+        }
+      ],
+      "outputs": {
+        "Private IP": [],
+        "else": ["6"]
+      }
+    },
+    "6": {
+      "name": "Scan Destination IP on VirusTotal",
       "type": "action",
       "icon": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2aWV3Qm94PSIwIDAgNjYgNjAiIGZpbGw9IiNmZmYiIGZpbGwtcnVsZT0iZXZlbm9kZCIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjx1c2UgeGxpbms6aHJlZj0iI0EiIHg9Ii41IiB5PSIuNSIvPjxzeW1ib2wgaWQ9IkEiIG92ZXJmbG93PSJ2aXNpYmxlIj48cGF0aCBkPSJNMjkuMDYgMjkuMjU3TDAgNTguNTE0aDY0VjBIMHptMjkuMSAyMy40MDZIMTMuNTNMMzcuNDcgMjkuMTEgMTQuMTc0IDUuODVINTguMTV6IiBzdHJva2U9Im5vbmUiIGZpbGw9IiMzYjYxZmYiIGZpbGwtcnVsZT0ibm9uemVybyIvPjwvc3ltYm9sPjwvc3ZnPg==",
       "outputs": {
-        "default": ["6", "7", "9"]
+        "default": ["7", "8", "10"]
       },
       "arguments": {
         "ip": "{{ node.4['output'][0] }}"
@@ -83,78 +100,199 @@
       "action_uuid": "fee286fa-415b-4f04-bf26-536e40b64859",
       "module_uuid": "d023af1d-25d8-465b-b85f-2ed48214d6a5"
     },
-    "6": {
-      "name": "Post IP Summary",
+    "7": {
+      "name": "Post Destination IP Summary",
       "type": "action",
       "outputs": {
         "default": []
       },
       "arguments": {
         "uuid": "{{ (store.uuid | reject('equalto', None)) | join('') }}",
-        "author": "IP Enrichment by VirusTotal",
-        "content": "**VirusTotal report for IP {{ node.4['output'][0] }}**\n- Country: {{ node.5.country }}\n- ASN: {{ node.5.asn }}\n- Malicious files served from this IP: {{ node.5['detected_downloaded_samples'] | length }}\n- Malicious URLs hosted on this IP: {{ node.5['detected_urls'] | length }}\n\n[Direct link to VirusTotal](https://www.virustotal.com/gui/ip-address/{{ node.4['output'][0] }})"
+        "author": "Destination IP Enrichment by VirusTotal",
+        "content": "**VirusTotal report for Destination IP {{ node.4['output'][0] }}**\n- Country: {{ node.6.country }}\n- ASN: {{ node.6.asn }}\n- Malicious files served from this IP: {{ node.6['detected_downloaded_samples'] | length }}\n- Malicious URLs hosted on this IP: {{ node.6['detected_urls'] | length }}\n\n[Direct link to VirusTotal](https://www.virustotal.com/gui/ip-address/{{ node.4['output'][0] }})"
       },
       "action_uuid": "0d323de3-a864-4afe-a0c3-e7ff45883d7a",
       "module_uuid": "92d8bb47-7c51-445d-81de-ae04edbb6f0a"
-    },
-    "7": {
-      "name": "Malicious Files?",
-      "type": "operator",
-      "subtype": "condition",
-      "cases": [
-        {
-          "left": "{% if node.5['detected_downloaded_samples'] | length > 0 %}true1{% endif %}",
-          "name": "Yes",
-          "right": "true1",
-          "comparison": "=="
-        }
-      ],
-      "outputs": {
-        "Yes": ["8"],
-        "else": []
-      }
     },
     "8": {
-      "name": "Post Malicious File Hashes",
-      "type": "action",
-      "outputs": {
-        "default": []
-      },
-      "arguments": {
-        "uuid": "{{ (store.uuid | reject('equalto', None)) | join('') }}",
-        "author": "IP Enrichment by VirusTotal",
-        "content": "Malicious file hashes served from {{ node.4['output'][0] }}:\n{{ node.5['detected_downloaded_samples'] | map(attribute='sha256') | join('\n') }}"
-      },
-      "action_uuid": "0d323de3-a864-4afe-a0c3-e7ff45883d7a",
-      "module_uuid": "92d8bb47-7c51-445d-81de-ae04edbb6f0a"
-    },
-    "9": {
-      "name": "Malicious URLs?",
+      "name": "Malicious Files (Dest)?",
       "type": "operator",
       "subtype": "condition",
       "cases": [
         {
-          "left": "{% if node.5['detected_urls'] | length > 0 %}true1{% endif %}",
+          "left": "{% if node.6['detected_downloaded_samples'] | length > 0 %}true1{% endif %}",
           "name": "Yes",
           "right": "true1",
           "comparison": "=="
         }
       ],
       "outputs": {
-        "Yes": ["10"],
+        "Yes": ["9"],
         "else": []
       }
     },
-    "10": {
-      "name": "Post Malicious URLs",
+    "9": {
+      "name": "Post Malicious File Hashes (Dest)",
       "type": "action",
       "outputs": {
         "default": []
       },
       "arguments": {
         "uuid": "{{ (store.uuid | reject('equalto', None)) | join('') }}",
-        "author": "IP Enrichment by VirusTotal",
-        "content": "Malicious URLs hosted on {{ node.4['output'][0] }}:\n{{ node.5['detected_urls'] | map(attribute='url') | join('\n') }}"
+        "author": "Destination IP Enrichment by VirusTotal",
+        "content": "Malicious file hashes served from {{ node.4['output'][0] }}:\n{{ node.6['detected_downloaded_samples'] | map(attribute='sha256') | join('\n') }}"
+      },
+      "action_uuid": "0d323de3-a864-4afe-a0c3-e7ff45883d7a",
+      "module_uuid": "92d8bb47-7c51-445d-81de-ae04edbb6f0a"
+    },
+    "10": {
+      "name": "Malicious URLs (Dest)?",
+      "type": "operator",
+      "subtype": "condition",
+      "cases": [
+        {
+          "left": "{% if node.6['detected_urls'] | length > 0 %}true1{% endif %}",
+          "name": "Yes",
+          "right": "true1",
+          "comparison": "=="
+        }
+      ],
+      "outputs": {
+        "Yes": ["11"],
+        "else": []
+      }
+    },
+    "11": {
+      "name": "Post Malicious URLs (Dest)",
+      "type": "action",
+      "outputs": {
+        "default": []
+      },
+      "arguments": {
+        "uuid": "{{ (store.uuid | reject('equalto', None)) | join('') }}",
+        "author": "Destination IP Enrichment by VirusTotal",
+        "content": "Malicious URLs hosted on {{ node.4['output'][0] }}:\n{{ node.6['detected_urls'] | map(attribute='url') | join('\n') }}"
+      },
+      "action_uuid": "0d323de3-a864-4afe-a0c3-e7ff45883d7a",
+      "module_uuid": "92d8bb47-7c51-445d-81de-ae04edbb6f0a"
+    },
+    "12": {
+      "name": "Extract Source IP",
+      "type": "action",
+      "outputs": {
+        "default": ["13"]
+      },
+      "arguments": {
+        "file": "{{ node.3['events'] }}",
+        "to_file": false,
+        "jsonpath": "$..['source.ip']",
+        "return_list": false
+      },
+      "action_uuid": "ecedfa52-7033-4ea8-9c3b-93ad34295f87",
+      "module_uuid": "07cce76b-a319-40ee-a0cf-1ba433431e21"
+    },
+    "13": {
+      "name": "Is Source IP Private?",
+      "type": "operator",
+      "subtype": "condition",
+      "cases": [
+        {
+          "left": "{%if node.12['output'][0] | regex_match('^(10\\..*|172\\.(1[6-9]|2[0-9]|3[01])\\..*|192\\.168\\..*)$') %}true1{% endif %}",
+          "name": "Private IP",
+          "right": "true1",
+          "comparison": "=="
+        }
+      ],
+      "outputs": {
+        "Private IP": [],
+        "else": ["14"]
+      }
+    },
+    "14": {
+      "name": "Scan Source IP on VirusTotal",
+      "type": "action",
+      "icon": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2aWV3Qm94PSIwIDAgNjYgNjAiIGZpbGw9IiNmZmYiIGZpbGwtcnVsZT0iZXZlbm9kZCIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjx1c2UgeGxpbms6aHJlZj0iI0EiIHg9Ii41IiB5PSIuNSIvPjxzeW1ib2wgaWQ9IkEiIG92ZXJmbG93PSJ2aXNpYmxlIj48cGF0aCBkPSJNMjkuMDYgMjkuMjU3TDAgNTguNTE0aDY0VjBIMHptMjkuMSAyMy40MDZIMTMuNTNMMzcuNDcgMjkuMTEgMTQuMTc0IDUuODVINTguMTV6IiBzdHJva2U9Im5vbmUiIGZpbGw9IiMzYjYxZmYiIGZpbGwtcnVsZT0ibm9uemVybyIvPjwvc3ltYm9sPjwvc3ZnPg==",
+      "outputs": {
+        "default": ["15", "16", "18"]
+      },
+      "arguments": {
+        "ip": "{{ node.12['output'][0] }}"
+      },
+      "action_uuid": "fee286fa-415b-4f04-bf26-536e40b64859",
+      "module_uuid": "d023af1d-25d8-465b-b85f-2ed48214d6a5"
+    },
+    "15": {
+      "name": "Post Source IP Summary",
+      "type": "action",
+      "outputs": {
+        "default": []
+      },
+      "arguments": {
+        "uuid": "{{ (store.uuid | reject('equalto', None)) | join('') }}",
+        "author": "Source IP Enrichment by VirusTotal",
+        "content": "**VirusTotal report for Source IP {{ node.12['output'][0] }}**\n- Country: {{ node.14.country }}\n- ASN: {{ node.14.asn }}\n- Malicious files served from this IP: {{ node.14['detected_downloaded_samples'] | length }}\n- Malicious URLs hosted on this IP: {{ node.14['detected_urls'] | length }}\n\n[Direct link to VirusTotal](https://www.virustotal.com/gui/ip-address/{{ node.12['output'][0] }})"
+      },
+      "action_uuid": "0d323de3-a864-4afe-a0c3-e7ff45883d7a",
+      "module_uuid": "92d8bb47-7c51-445d-81de-ae04edbb6f0a"
+    },
+    "16": {
+      "name": "Malicious Files (Src)?",
+      "type": "operator",
+      "subtype": "condition",
+      "cases": [
+        {
+          "left": "{% if node.14['detected_downloaded_samples'] | length > 0 %}true1{% endif %}",
+          "name": "Yes",
+          "right": "true1",
+          "comparison": "=="
+        }
+      ],
+      "outputs": {
+        "Yes": ["17"],
+        "else": []
+      }
+    },
+    "17": {
+      "name": "Post Malicious File Hashes (Src)",
+      "type": "action",
+      "outputs": {
+        "default": []
+      },
+      "arguments": {
+        "uuid": "{{ (store.uuid | reject('equalto', None)) | join('') }}",
+        "author": "Source IP Enrichment by VirusTotal",
+        "content": "Malicious file hashes served from {{ node.12['output'][0] }}:\n{{ node.14['detected_downloaded_samples'] | map(attribute='sha256') | join('\n') }}"
+      },
+      "action_uuid": "0d323de3-a864-4afe-a0c3-e7ff45883d7a",
+      "module_uuid": "92d8bb47-7c51-445d-81de-ae04edbb6f0a"
+    },
+    "18": {
+      "name": "Malicious URLs (Src)?",
+      "type": "operator",
+      "subtype": "condition",
+      "cases": [
+        {
+          "left": "{% if node.14['detected_urls'] | length > 0 %}true1{% endif %}",
+          "name": "Yes",
+          "right": "true1",
+          "comparison": "=="
+        }
+      ],
+      "outputs": {
+        "Yes": ["19"],
+        "else": []
+      }
+    },
+    "19": {
+      "name": "Post Malicious URLs (Src)",
+      "type": "action",
+      "outputs": {
+        "default": []
+      },
+      "arguments": {
+        "uuid": "{{ (store.uuid | reject('equalto', None)) | join('') }}",
+        "author": "Source IP Enrichment by VirusTotal",
+        "content": "Malicious URLs hosted on {{ node.12['output'][0] }}:\n{{ node.14['detected_urls'] | map(attribute='url') | join('\n') }}"
       },
       "action_uuid": "0d323de3-a864-4afe-a0c3-e7ff45883d7a",
       "module_uuid": "92d8bb47-7c51-445d-81de-ae04edbb6f0a"
