@@ -2,7 +2,7 @@
   "name": "VT Enrich IP",
   "description": "Extract destination and source IPs from alert events, skip private IPs, and enrich public IPs with VirusTotal. Posts country/ASN context, malicious file hashes, and malicious URLs.",
   "uuid": "3f8a2b1c-7d4e-5f6a-8b9c-0d1e2f3a4b5c",
-  "tags": null,
+  "tags": [],
   "nodes": {
     "0": {
       "name": "Alert Created",
@@ -108,7 +108,7 @@
       },
       "arguments": {
         "uuid": "{{ (store.uuid | reject('equalto', None)) | join('') }}",
-        "author": "Destination IP Enrichment by VirusTotal",
+        "author": "VT Enrich - Destination IP",
         "content": "**VirusTotal report for Destination IP {{ node.4['output'][0] }}**\n- Country: {{ node.6.country }}\n- ASN: {{ node.6.asn }}\n- Malicious files served from this IP: {{ node.6['detected_downloaded_samples'] | length }}\n- Malicious URLs hosted on this IP: {{ node.6['detected_urls'] | length }}\n\n[Direct link to VirusTotal](https://www.virustotal.com/gui/ip-address/{{ node.4['output'][0] }})"
       },
       "action_uuid": "0d323de3-a864-4afe-a0c3-e7ff45883d7a",
@@ -139,7 +139,7 @@
       },
       "arguments": {
         "uuid": "{{ (store.uuid | reject('equalto', None)) | join('') }}",
-        "author": "Destination IP Enrichment by VirusTotal",
+        "author": "VT Enrich - Destination IP",
         "content": "Malicious file hashes served from {{ node.4['output'][0] }}:\n{{ node.6['detected_downloaded_samples'] | map(attribute='sha256') | join('\n') }}"
       },
       "action_uuid": "0d323de3-a864-4afe-a0c3-e7ff45883d7a",
@@ -170,7 +170,7 @@
       },
       "arguments": {
         "uuid": "{{ (store.uuid | reject('equalto', None)) | join('') }}",
-        "author": "Destination IP Enrichment by VirusTotal",
+        "author": "VT Enrich - Destination IP",
         "content": "Malicious URLs hosted on {{ node.4['output'][0] }}:\n{{ node.6['detected_urls'] | map(attribute='url') | join('\n') }}"
       },
       "action_uuid": "0d323de3-a864-4afe-a0c3-e7ff45883d7a",
@@ -229,7 +229,7 @@
       },
       "arguments": {
         "uuid": "{{ (store.uuid | reject('equalto', None)) | join('') }}",
-        "author": "Source IP Enrichment by VirusTotal",
+        "author": "VT Enrich - Source IP",
         "content": "**VirusTotal report for Source IP {{ node.12['output'][0] }}**\n- Country: {{ node.14.country }}\n- ASN: {{ node.14.asn }}\n- Malicious files served from this IP: {{ node.14['detected_downloaded_samples'] | length }}\n- Malicious URLs hosted on this IP: {{ node.14['detected_urls'] | length }}\n\n[Direct link to VirusTotal](https://www.virustotal.com/gui/ip-address/{{ node.12['output'][0] }})"
       },
       "action_uuid": "0d323de3-a864-4afe-a0c3-e7ff45883d7a",
@@ -260,7 +260,7 @@
       },
       "arguments": {
         "uuid": "{{ (store.uuid | reject('equalto', None)) | join('') }}",
-        "author": "Source IP Enrichment by VirusTotal",
+        "author": "VT Enrich - Source IP",
         "content": "Malicious file hashes served from {{ node.12['output'][0] }}:\n{{ node.14['detected_downloaded_samples'] | map(attribute='sha256') | join('\n') }}"
       },
       "action_uuid": "0d323de3-a864-4afe-a0c3-e7ff45883d7a",
@@ -291,7 +291,7 @@
       },
       "arguments": {
         "uuid": "{{ (store.uuid | reject('equalto', None)) | join('') }}",
-        "author": "Source IP Enrichment by VirusTotal",
+        "author": "VT Enrich - Source IP",
         "content": "Malicious URLs hosted on {{ node.12['output'][0] }}:\n{{ node.14['detected_urls'] | map(attribute='url') | join('\n') }}"
       },
       "action_uuid": "0d323de3-a864-4afe-a0c3-e7ff45883d7a",
